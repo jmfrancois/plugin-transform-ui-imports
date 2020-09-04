@@ -3,7 +3,7 @@ const babelPlugin = require('.');
 
 pluginTester({
 	plugin: babelPlugin,
-	pluginName: 'module:@talend/plugin-transform-ui-imports',
+	pluginName: 'module:@talend/babel-plugin-transform-ui-imports',
 	tests: [
 		{
 			code: `
