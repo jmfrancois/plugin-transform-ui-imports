@@ -66,6 +66,15 @@ const inBootstrap = [
 	'Well',
 ];
 
+function isDefault(name, root) {
+	if (root === '@talend/react-components') {
+		if (name === 'getTheme') {
+			return false;
+		}
+	}
+	return true;
+}
+
 function getPath(name, root) {
 	const base = `${root}/lib`;
 	if (root === '@talend/react-components') {
@@ -89,13 +98,15 @@ function getPath(name, root) {
 			case 'RichError':
 				return `${base}/RichTooltip/RichError`;
 			case 'Checkbox':
-				return `${base}/Toggle/Checkbox.component`;
+				return `${base}/Toggle`;
 			case 'CIRCULAR_PROGRESS_SIZE':
 				return `${base}/constants`;
 			case 'I18N_DOMAIN_COMPONENTS':
 				return `${base}/constants`;
 			case 'getLocale':
 				return `${base}/DateFnsLocale/locale`;
+			case 'getTheme':
+				return `${base}/theme`;
 			// translated bootstrap
 			case 'BootstrapBadge':
 				return 'react-bootstrap/lib/Badge';
@@ -114,36 +125,39 @@ function getPath(name, root) {
 	return `${base}/${name}`;
 }
 
-
 module.exports = function transform() {
-  return {
-    visitor: {
-      ImportDeclaration(path) {
-        // path.node is the base accessor to AST
-        const base = path.node.source.value;
-        if (base !== '@talend/react-components' && base !== '@talend/react-containers') return;
+	return {
+		visitor: {
+			ImportDeclaration(path) {
+				// path.node is the base accessor to AST
+				const base = path.node.source.value;
+				if (base !== '@talend/react-components' && base !== '@talend/react-containers') return;
 
-        const nbSpec = path.node.specifiers.length;
+				const nbSpec = path.node.specifiers.length;
 
-        path.node.specifiers.forEach((spec, index) => {
-          if (spec.type === 'ImportSpecifier') {
-            if (index + 1 === nbSpec) {
-            } if (index + 1 !== nbSpec) {
-              // lets add it
-              const source = t.stringLiteral(getPath(spec.imported.name, base));
-              const specifier = t.importDefaultSpecifier(t.identifier(spec.local.name));
-              const imp = t.importDeclaration([specifier], source);
-              path.insertAfter(imp);
-            } else {
-              // is last so we replace
-              path.node.specifiers = [t.importDefaultSpecifier(t.identifier(spec.local.name))];
-              path.node.source = t.stringLiteral(getPath(spec.imported.name, base));
-            }
-          } else {
-            console.warn(`WARNING: ${spec.type} are not handled. Bundle size can not be decrease`);
-          }
-        });
-      },
-    },
-  };
-}
+				path.node.specifiers.forEach((spec, index) => {
+					if (spec.type === 'ImportSpecifier') {
+						if (index + 1 === nbSpec) {
+						}
+						if (index + 1 !== nbSpec) {
+							// lets add it
+							const source = t.stringLiteral(getPath(spec.imported.name, base));
+							let specifier = t.importDefaultSpecifier(t.identifier(spec.local.name));
+							if (!isDefault(spec.local.name)) {
+								specifier = t.importSpecifier(t.identifier(spec.local.name));
+							}
+							const imp = t.importDeclaration([specifier], source);
+							path.insertAfter(imp);
+						} else {
+							// is last so we replace
+							path.node.specifiers = [t.importDefaultSpecifier(t.identifier(spec.local.name))];
+							path.node.source = t.stringLiteral(getPath(spec.imported.name, base));
+						}
+					} else {
+						console.warn(`WARNING: ${spec.type} are not handled. Bundle size can not be decrease`);
+					}
+				});
+			},
+		},
+	};
+};
