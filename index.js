@@ -94,6 +94,8 @@ function getPath(name, root) {
 				return `${base}/constants`;
 			case 'I18N_DOMAIN_COMPONENTS':
 				return `${base}/constants`;
+			case 'getLocale':
+				return `${base}/DateFnsLocale/locale`;
 			// translated bootstrap
 			case 'BootstrapBadge':
 				return 'react-bootstrap/lib/Badge';
