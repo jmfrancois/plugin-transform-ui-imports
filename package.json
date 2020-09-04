@@ -1,6 +1,6 @@
 {
   "name": "@talend/babel-plugin-transform-ui-imports",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "This plugin transform import of component using /lib path",
   "main": "index.js",
   "scripts": {
